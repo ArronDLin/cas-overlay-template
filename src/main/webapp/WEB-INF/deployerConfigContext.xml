@@ -29,6 +29,8 @@
        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
+  <context:component-scan base-package="org.macula.login" />
+  <context:annotation-config/>
 
     <util:map id="authenticationHandlersResolvers">
         <entry key-ref="proxyAuthenticationHandler" value-ref="proxyPrincipalResolver" />
@@ -40,12 +42,10 @@
         <ref bean="rememberMeAuthenticationMetaDataPopulator" />
     </util:list>
 
-    <bean id="attributeRepository" class="org.jasig.services.persondir.support.NamedStubPersonAttributeDao"
+<!-- For test only -->
+<!--     <bean id="attributeRepository" class="org.jasig.services.persondir.support.NamedStubPersonAttributeDao"
           p:backingMap-ref="attrRepoBackingMap" />
-
-    <alias name="acceptUsersAuthenticationHandler" alias="primaryAuthenticationHandler" />
-    <alias name="personDirectoryPrincipalResolver" alias="primaryPrincipalResolver" />
-
+          
     <util:map id="attrRepoBackingMap">
         <entry key="uid" value="uid" />
         <entry key="eduPersonAffiliation" value="eduPersonAffiliation" />
@@ -56,15 +56,62 @@
                 <value>faculty</value>
                 <value>staff</value>
                 <value>org</value>
+                <value>test</value>
             </list>
         </entry>
-    </util:map>
+    </util:map>  --> 
+<!--             
+	<bean id="attributeRepository"
+	    class="org.jasig.services.persondir.support.jdbc.SingleRowJdbcPersonAttributeDao">
+	    <constructor-arg index="0" ref="dataSource" />
+	    <constructor-arg index="1" value="SELECT * FROM USER_DATA WHERE {0}" />
+	    <property name="queryAttributeMapping">
+	        <map>
+	            <entry key="username" value="username" />
+	        </map>
+	    </property>
+	    <property name="resultAttributeMapping">
+	        <map>
+	            <entry key="uid" value="username" />
+	        </map>
+	    </property>
+	</bean>	
+ -->	
+ 
+ 	<bean id="attributeRepository"
+	    class="org.macula.login.authentication.UserPersonAttributeDao" />
 
-    <alias name="serviceThemeResolver" alias="themeResolver" />
+    <!-- <alias name="acceptUsersAuthenticationHandler" alias="primaryAuthenticationHandler" /> -->
+    <alias name="usernamePasswordAuthenticationHandler" alias="primaryAuthenticationHandler" />
+    <alias name="personDirectoryPrincipalResolver" alias="primaryPrincipalResolver" />
 
-    <alias name="jsonServiceRegistryDao" alias="serviceRegistryDao" />
 
-    <alias name="defaultTicketRegistry" alias="ticketRegistry" />
+
+   <!-- <alias name="serviceThemeResolver" alias="themeResolver" /> --> 
+   <!-- <bean id="registeredServiceThemeBasedViewResolver" class="org.jasig.cas.services.web.RegisteredServiceThemeBasedViewResolver" 
+   	p:servicesManager-ref="servicesManager"/>
+   <alias name="registeredServiceThemeBasedViewResolver" alias="themeResolver" />-->
+    <bean id="internalViewResolver" class="org.jasig.cas.services.web.RegisteredServiceThemeBasedViewResolver"
+
+          c:servicesManager-ref="servicesManager"
+
+          p:suffix=".jsp"
+
+          p:prefix="${cas.themeResolver.pathprefix:/WEB-INF/view/jsp}"
+
+          p:order="10000"/>
+
+    <!-- <alias name="jsonServiceRegistryDao" alias="serviceRegistryDao" /> -->
+
+    <!--<alias name="defaultTicketRegistry" alias="ticketRegistry" />-->
+    
+<!-- 	<bean id="redisTicketRegistry" class="org.macula.login.ticket.registry.RedisTicketRegistry">
+	    <constructor-arg index="0" ref="ticketRedisTemplate" />
+	    <constructor-arg index="1" value="1800" />
+	    <constructor-arg index="2" value="300" />
+	</bean> -->
+    <alias name="redisTicketRegistry" alias="ticketRegistry" />
+    
 
     <alias name="ticketGrantingTicketExpirationPolicy" alias="grantingTicketExpirationPolicy" />
     <alias name="multiTimeUseOrTimeoutExpirationPolicy" alias="serviceTicketExpirationPolicy" />
@@ -87,25 +134,26 @@
     <alias name="defaultPrincipalFactory" alias="principalFactory" />
     <alias name="defaultAuthenticationTransactionManager" alias="authenticationTransactionManager" />
     <alias name="defaultPrincipalElectionStrategy" alias="principalElectionStrategy" />
+
     
-    	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close"> 
-	    <!-- 基本属性 url、user、password -->
+<!--     	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close"> 
+	    基本属性 url、user、password
 	    <property name="url" value="jdbc:mysql://127.0.0.1:3306/macula-samples?useUnicode=true&amp;characterEncoding=utf-8&amp;zeroDateTimeBehavior=convertToNull" />
 	    <property name="username" value="root" />
 	    <property name="password" value="Ld232432" />
 	
-	    <!-- 配置初始化大小、最小、最大 -->
+	    配置初始化大小、最小、最大
 	    <property name="initialSize" value="1" />
 	    <property name="minIdle" value="1" /> 
 	    <property name="maxActive" value="20" />
 	
-	    <!-- 配置获取连接等待超时的时间 -->
+	    配置获取连接等待超时的时间
 	    <property name="maxWait" value="60000" />
 	
-	    <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+	    配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
 	    <property name="timeBetweenEvictionRunsMillis" value="60000" />
 	
-	    <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+	    配置一个连接在池中最小生存的时间，单位是毫秒
 	    <property name="minEvictableIdleTimeMillis" value="300000" />
 	
 	    <property name="validationQuery" value="SELECT 1 from dual" />
@@ -113,22 +161,39 @@
 	    <property name="testOnBorrow" value="false" />
 	    <property name="testOnReturn" value="false" />
 	
-	    <!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+	    打开PSCache，并且指定每个连接上PSCache的大小
 	    <property name="poolPreparedStatements" value="true" />
 	    <property name="maxPoolPreparedStatementPerConnectionSize" value="20" />
 	
-	    <!-- 配置监控统计拦截的filters -->
+	    配置监控统计拦截的filters
 	    <property name="filters" value="stat" /> 
-	</bean>	
+	</bean>	 -->
 	  
 
-	
+	<!-- 
 	
 	<alias name="queryDatabaseAuthenticationHandler" alias="primaryAuthenticationHandler" />
 	<alias name="dataSource" alias="queryDatabaseDataSource" />
 
 	<alias name="dataSource" alias="queryEncodeDatabaseDataSource" />
-	
-	<alias name="jpaServiceRegistryDao" alias="serviceRegistryDao" />
-  
+	 -->
+	 
+	<!-- <alias name="jpaServiceRegistryDao" alias="serviceRegistryDao" /> -->
+	<alias name="applicationBasedServiceRegistryDao" alias="serviceRegistryDao" />
+	<alias name="defaultPasswordEncoder" alias="passwordEncoder" />
+  <!--  
+	<bean id="captchaErrorCountAction" class="org.jasig.cas.authentication.CaptchaErrorCountAction"/>
+	 
+	<bean id="captchaValidateAction" class="org.jasig.cas.authentication.CaptchaValidateAction"
+	   p:captchaService-ref="jcaptchaService"
+	   p:captchaValidationParameter="j_captcha_response"/>
+ -->
+ 	<alias name="defaultPasswordPolicyConfiguration" alias="passwordPolicy" />
+ 	<alias name="defaultPasswordPolicyConfiguration" alias="passwordPolicyConfiguration" /> 
+	 	<!-- 4.2.3 
+ 	<bean id="noOpCipherExecutor" class="org.jasig.cas.util.NoOpCipherExecutor"  />
+ 	<alias name="noOpCipherExecutor" alias="defaultCookieCipherExecutor" />
+ 	-->
+ 	 <alias name="tgcCipherExecutor" alias="defaultCookieCipherExecutor" />
+ 	 <alias name="shiroCipherExecutor" alias="ticketCipherExecutor" />
 </beans>

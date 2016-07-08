@@ -3,8 +3,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd ">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.jasig.cas</groupId>
-    <artifactId>cas-overlay</artifactId>
+    <groupId>org.macula</groupId>
+    <artifactId>macula-login</artifactId>
     <packaging>war</packaging>
     <version>1.0</version>
 
@@ -20,7 +20,7 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.6</version>
                 <configuration>
-                    <warName>cas</warName>
+                    <!-- <warName>macula-login</warName> -->
                     <overlays>
                         <overlay>
                             <groupId>org.jasig.cas</groupId>
@@ -42,6 +42,7 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
+            <!-- 
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
@@ -55,7 +56,7 @@
                         </systemProperty>
                     </systemProperties>
                     <webApp>
-                        <contextPath>/cas</contextPath>
+                        <contextPath>/macula-login</contextPath>
                         <overrideDescriptor>${basedir}/etc/jetty/web.xml</overrideDescriptor>
                     </webApp>
 	                <webAppConfig>
@@ -64,8 +65,9 @@
                     <jvmArgs>-Dlog4j.configurationFile=/etc/cas/log4j2.xml -Xdebug -Xrunjdwp:transport=dt_socket,address=5000,server=y,suspend=n</jvmArgs>
                 </configuration>
             </plugin>
+             -->
         </plugins>
-        <finalName>cas</finalName>
+        <finalName>macula-login</finalName>
     </build>
 
     <dependencies>
@@ -78,19 +80,44 @@
         </dependency>
         
         <!-- JDBC -->
-		<dependency>
+<!-- 		<dependency>
 		    <groupId>org.jasig.cas</groupId>
 		    <artifactId>cas-server-support-jdbc</artifactId>
 		    <version>${cas.version}</version>
-		</dependency>
+		</dependency> -->
 		
-		<!-- cas-server-support-jpa-service-registry -->
+		<!-- cas-server-support-jpa-service-registry 
 		<dependency>
 		    <groupId>org.jasig.cas</groupId>
 		    <artifactId>cas-server-support-jpa-service-registry</artifactId>
 		    <version>${cas.version}</version>
 		</dependency>
-		
+ 		-->
+<!-- 
+		<dependency>
+		    <groupId>org.jasig.cas</groupId>
+		    <artifactId>cas-server-webapp-actions</artifactId>
+		    <version>${cas.version}</version>
+		</dependency>		
+ -->
+ 		
+		<!-- JCaptcha -->
+		<dependency>
+			<groupId>com.octo.captcha</groupId>
+			<artifactId>jcaptcha</artifactId>
+			<version>1.0</version>
+				<exclusions>
+					<exclusion>
+						<groupId>commons-collections</groupId>
+						<artifactId>commons-collections</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
+					</exclusion>
+				</exclusions>			
+			
+		</dependency>		
 		
 		<dependency>
 			<groupId>com.alibaba</groupId>
@@ -107,21 +134,104 @@
 		<!-- ADFS -->
 		<dependency>
 			<groupId>org.jasig.cas</groupId>
-			<artifactId>cas-server-support-wsfederation-webflow</artifactId>
+			<artifactId>cas-server-support-wsfederation</artifactId>
 			<version>${cas.version}</version>
 		</dependency>
-					
+		 
+		
+		<dependency>
+			<groupId>org.jasig.cas</groupId>
+			<artifactId>cas-server-core-webflow</artifactId>
+			<version>${cas.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-jpa</artifactId>
+			<version>${spring-data-jpa.version}</version>
+ 			<exclusions>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-aop</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-tx</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-beans</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-orm</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-jdbc</artifactId>
+				</exclusion>																					
+			</exclusions>
+		</dependency>
+		
+        <!-- redis -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+            <version>1.5.1.RELEASE</version>
+            <exclusions>
+            	<exclusion>
+            		<groupId>org.springframework</groupId>
+            		<artifactId>spring-tx</artifactId>
+            	</exclusion>
+            	<exclusion>
+            		<groupId>org.springframework</groupId>
+            		<artifactId>spring-aop</artifactId>
+            	</exclusion>            	
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>2.6.2</version>
+		</dependency>		
+		
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+			<version>1.2</version>
+			<scope>provided</scope>
+		</dependency>	
+		
+		<dependency>
+			<groupId>org.jasig.cas</groupId>
+			<artifactId>cas-server-core</artifactId>
+			<version>${cas.version}</version>
+		</dependency>		
+
+		<!-- 4.2.3
+		<dependency>
+			<groupId>org.jasig.cas</groupId>
+			<artifactId>cas-server-webapp-cookie</artifactId>
+			<version>${cas.version}</version>
+		</dependency>		
+			 -->		
 
     </dependencies>
 
     <properties>
-        <cas.version>4.2.0</cas.version>
+        <cas.version>4.2.3</cas.version>
         <maven-jetty-plugin.version>9.3.6.v20151106</maven-jetty-plugin.version>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spring-data-jpa.version>1.9.4.RELEASE</spring-data-jpa.version>
+        <buildNumber>${maven.build.timestamp}</buildNumber>
     </properties>
-
+ <!--
     <repositories>
         <repository>
             <id>sonatype-releases</id>
@@ -132,4 +242,88 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
     </repositories>
+ -->
+ 	<repositories>
+		<repository>
+			<id>macula-repo</id>
+			<name>macula-repo</name>
+			<url>http://maven.infinitus.com.cn:8081/nexus/content/groups/public</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>macula-plugin-repo</id>
+			<name>macula-plugin-repo</name>
+			<url>http://maven.infinitus.com.cn:8081/nexus/content/groups/public</url>
+		</pluginRepository>
+	</pluginRepositories>    
+	
+	<profiles>
+		<profile>
+			<id>test</id>
+			<properties>
+				<enviroment>test</enviroment>
+			</properties>
+			<build>
+				<finalName>login_${enviroment}[${project.version}.${buildNumber}]</finalName>
+				<plugins>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>copy-resources</id>
+								<phase>validate</phase>	
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>target/classes/META-INF/spring</outputDirectory>
+									<resources>
+										<resource>
+											<directory>src/main/deploy/test</directory>
+											<filtering>true</filtering>
+										</resource>
+									</resources>
+								</configuration>						
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>		
+		</profile>
+		<profile>
+			<id>prd</id>
+			<properties>
+				<enviroment>prd</enviroment>
+			</properties>
+			<build>
+				<finalName>login_${enviroment}[${project.version}.${buildNumber}]</finalName>
+				<plugins>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>copy-resources</id>
+								<phase>validate</phase>	
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>target/classes/META-INF/spring</outputDirectory>
+									<resources>
+										<resource>
+											<directory>src/main/deploy/prd</directory>
+											<filtering>true</filtering>
+										</resource>
+									</resources>
+								</configuration>						
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>		
+		</profile>	
+	</profiles>
+	
 </project>
